@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Image Scraper - VisionAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container" style="max-width: 800px; margin-top: 2rem;">
+        <header>
+            <div class="logo" style="justify-content: center;">
+                <div class="logo-icon"></div>
+                <h1>Vision<span class="gradient-text">AI</span> Tool</h1>
+            </div>
+            <p class="subtitle" style="text-align: center;">Download batches of images from the web</p>
+            <div style="margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center;">
+                <a href="index.html"
+                    style="color: var(--accent-primary); text-decoration: none; font-weight: 500; font-size: 0.9rem;">←
+                    Back to Classifier</a>
+                <a href="how-it-works.html"
+                    style="color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.9rem;">📖 How
+                    it works</a>
+            </div>
+        </header>
+
+        <main>
+            <section class="panel scraper-panel"
+                style="border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.05);">
+                <div class="panel-header" style="margin-bottom: 2rem;">
+                    <h2>🌐 Image Scraper</h2>
+                    <p style="color: var(--text-muted); line-height: 1.5;">Type a keyword below and we will
+                        automatically fetch images from Bing. You can use these downloaded images to train your VisionAI
+                        model on the main page. (Note: The files are saved locally to your dataset folder).</p>
+                </div>
+
+                <div class="add-class-controls" style="margin-bottom: 0;">
+                    <input type="text" id="scrape-keyword" placeholder="E.g., Honda Alternator" autocomplete="off"
+                        style="flex: 2;">
+                    <input type="number" id="scrape-count" placeholder="Count (Max 20)" value="10" min="1" max="50"
+                        style="flex: 1; min-width: 100px;" class="text-input-style">
+                    <button id="standalone-scrape-btn" class="btn primary" style="background: var(--accent-secondary);"
+                        onclick="handleScrape()">Download Images</button>
+                </div>
+
+                <div id="scrape-status"
+                    style="margin-top: 1.5rem; font-size: 0.95rem; color: var(--text-main); font-weight: 500; text-align: center;">
+                </div>
+
+                <div id="action-buttons" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;"
+                    class="hidden">
+                    <button class="btn secondary" onclick="handleOpenLocation()">📂 Open Folder Location</button>
+                    <button class="btn secondary"
+                        style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4);"
+                        onclick="handleSaveToDesktop()">💾 Copy to Desktop</button>
+                </div>
+
+                <div id="history-container"
+                    style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;"
+                    class="hidden">
+                    <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Recent Scrapes</h3>
+                    <div id="history-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- History tags injected here -->
+                    </div>
+                </div>
+
+                <div id="scraped-images-gallery"
+                    style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 2rem; padding-bottom: 0.5rem;"
+                    class="hidden">
+                    <!-- Images will appear here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let currentKeyword = "";
+
+        // Initialize History UI on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateHistoryUI();
+        });
+
+        function saveToHistory(keyword) {
+            let history = JSON.parse(localStorage.getItem('scrapeHistory') || '[]');
+            // Remove if exists to move to front
+            history = history.filter(k => k.toLowerCase() !== keyword.toLowerCase());
+            history.unshift(keyword);
+            // Keep top 10
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('scrapeHistory', JSON.stringify(history));
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const history = JSON.parse(localStorage.getItem('scrapeHistory') || '[]');
+            const container = document.getElementById('history-container');
+            const list = document.getElementById('history-list');
+
+            if (history.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            list.innerHTML = '';
+
+            history.forEach(keyword => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.style.padding = '0.3rem 0.8rem';
+                btn.style.fontSize = '0.85rem';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.border = '1px solid rgba(255,255,255,0.1)';
+                btn.innerText = "📁 " + keyword;
+                btn.onclick = () => loadHistoryItem(keyword);
+                list.appendChild(btn);
+            });
+        }
+
+        async function loadHistoryItem(keyword) {
+            document.getElementById('scrape-keyword').value = keyword;
+            // Optionally auto-trigger actions or just set the state:
+            currentKeyword = keyword;
+            document.getElementById('action-buttons').classList.remove('hidden');
+            document.getElementById('scrape-status').innerHTML = `<span style="color: var(--text-muted);">Loaded "${keyword}" from history. You can open its location or re-download.</span>`;
+            document.getElementById('scraped-images-gallery').innerHTML = '';
+            document.getElementById('scraped-images-gallery').classList.add('hidden');
+        }
+
+        async function handleScrape() {
+            const keywordInput = document.getElementById('scrape-keyword');
+            const countInput = document.getElementById('scrape-count');
+            const statusDiv = document.getElementById('scrape-status');
+            const gallery = document.getElementById('scraped-images-gallery');
+            const btn = document.getElementById('standalone-scrape-btn');
+
+            const keyword = keywordInput.value.trim();
+            const count = parseInt(countInput.value) || 10;
+
+            if (!keyword) {
+                alert("Please enter a keyword to search for.");
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Downloading... ⏳";
+            btn.disabled = true;
+            statusDiv.innerHTML = "<span style='color: var(--accent-primary)'>Reaching out to Python Backend...</span>";
+            gallery.innerHTML = '';
+            gallery.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword, count, className: keyword })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success' && result.images && result.images.length > 0) {
+                    currentKeyword = keyword;
+                    saveToHistory(keyword);
+                    statusDiv.innerHTML = `<span style="color: #10b981;">✅ Successfully downloaded ${result.images.length} images!</span> <br><br> <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 300;">You can right-click to save these, or look in your 'dataset' folder, then upload them on the main AI page!</span>`;
+                    gallery.classList.remove('hidden');
+                    document.getElementById('action-buttons').classList.remove('hidden');
+
+                    result.images.forEach(imgUrl => {
+                        const img = document.createElement('img');
+                        img.src = imgUrl;
+                        img.style.height = '120px';
+                        img.style.borderRadius = 'var(--radius-md)';
+                        img.style.objectFit = 'cover';
+                        img.style.border = '2px solid rgba(255,255,255,0.1)';
+                        gallery.appendChild(img);
+                    });
+                } else {
+                    statusDiv.innerText = "❌ Error: " + (result.message || "No images found or unknown error.");
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "❌ Failed to connect. Is the Python server (run_scraper.bat) running?";
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleOpenLocation() {
+            if (!currentKeyword) return;
+            try {
+                await fetch('/api/open_folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ className: currentKeyword })
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function handleSaveToDesktop() {
+            if (!currentKeyword) return;
+            try {
+                const response = await fetch('/api/save_to_desktop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ className: currentKeyword })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Successfully copied the folder to your Desktop!');
+                } else {
+                    alert('Error copying: ' + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Connection error.');
+            }
+        }
+    </script>
+</body>
+
+</html>

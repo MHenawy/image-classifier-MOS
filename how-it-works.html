@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How VisionAI Works</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .explainer-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .explainer-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(16px);
+        }
+
+        .explainer-card h2 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .explainer-card p {
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .step-number {
+            background: var(--accent-gradient);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .diagram {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .highlight {
+            color: var(--accent-secondary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="explainer-container">
+        <a href="index.html" class="nav-link">
+            <span>←</span> Back to the App
+        </a>
+
+        <header>
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>How Vision<span class="gradient-text">AI</span> Works</h1>
+            </div>
+            <p class="subtitle">A simple guide to how your browser learns to see.</p>
+        </header>
+
+        <section class="explainer-card">
+            <h2><span class="step-number">1</span> The Concept: Transfer Learning</h2>
+            <p>Training an Artificial Intelligence from absolute scratch takes thousands of hours and millions of
+                images. Our app uses a clever shortcut called <strong>Transfer Learning</strong>.</p>
+            <p>Instead of starting with a blank brain, we start with <strong>MobileNet</strong>—a highly advanced Google
+                AI model that has <em>already</em> been trained to recognize millions of everyday objects like cars,
+                trees, shapes, and textures.</p>
+        </section>
+
+        <section class="explainer-card">
+            <h2><span class="step-number">2</span> The Learning Phase (Feature Extraction)</h2>
+            <p>When you upload pictures of your custom classes (e.g., your "Cats" and "Dogs"), we don't teach the model
+                what a cat is from scratch. </p>
+            <p>Instead, we run your image through MobileNet, but we <strong>stop it</strong> right before it guesses
+                what it is. At that point, MobileNet spits out a complex mathematical summary of the image's "features"
+                (shapes, colors, edges). This summary is called an <span class="highlight">Activation Vector</span>.</p>
+
+            <div class="diagram">
+                [Your Image] → [MobileNet Cortex] → <strong>[Math Summary of Image]</strong>
+            </div>
+
+            <p>We then take that math summary, and map it to the label you gave it ("Cat"). We store all these summaries
+                in memory.</p>
+        </section>
+
+        <section class="explainer-card">
+            <h2><span class="step-number">3</span> The Prediction Phase (K-Nearest Neighbors)</h2>
+            <p>When you upload a brand new test image to predict, we do the exact same thing: run it through MobileNet
+                to get its math summary.</p>
+            <p>Then, we use a simple but powerful algorithm called <strong>K-Nearest Neighbors (KNN)</strong>. The
+                algorithm looks at this new summary and compares it to all the training summaries you uploaded earlier.
+            </p>
+            <p>It essentially asks: <em>"Which training images is this new image mathematically closest to?"</em></p>
+
+            <div class="diagram">
+                New Image Math Summary<br>
+                ↓<br>
+                Closest to: [Cat, Cat, Dog]<br>
+                ↓<br>
+                <strong>Prediction: Cat (66% Confidence)</strong>
+            </div>
+
+            <p>If its features match closest to the "Cats" you uploaded earlier, the app confidently predicts "Cat"!</p>
+        </section>
+    </div>
+</body>
+
+</html>

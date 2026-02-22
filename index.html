@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Identifier</title>
+    <meta name="description" content="Train a custom image classifier in your browser.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- TensorFlow.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier" defer></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <h2 id="loader-text">Loading AI Models...</h2>
+            <p>Downloading MobileNet and KNN-Classifier. This might take a moment.</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>Vision<span class="gradient-text">AI</span></h1>
+            </div>
+            <p class="subtitle">Train a custom image classifier directly in your browser.</p>
+            <div style="margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center;">
+                <a href="how-it-works.html"
+                    style="color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.9rem;">📖 How
+                    it works</a>
+                <a href="scraper.html"
+                    style="color: var(--accent-secondary); text-decoration: none; font-weight: 500; font-size: 0.9rem;">🌐
+                    Image Scraper Tool</a>
+            </div>
+        </header>
+
+
+
+        <!-- Step 1: Learning Phase -->
+        <section class="panel learning-panel">
+            <div class="panel-header">
+                <h2>1. Teaching Phase</h2>
+                <p>Create classes and upload images to train the model.</p>
+            </div>
+
+            <div class="add-class-controls">
+                <input type="text" id="new-class-name" placeholder="E.g., Cat, Dog, Car..." autocomplete="off">
+                <button id="add-class-btn" class="btn primary">Add Class</button>
+            </div>
+
+            <div id="classes-container" class="classes-grid">
+                <!-- Class cards will be injected here dynamically -->
+            </div>
+        </section>
+
+        <!-- Step 2: Prediction Phase -->
+        <section class="panel prediction-panel">
+            <div class="panel-header">
+                <h2>2. Prediction Phase</h2>
+                <p>Upload a new image to see what the model thinks it is.</p>
+            </div>
+
+            <div class="prediction-content">
+                <div class="upload-zone" id="test-upload-zone">
+                    <input type="file" id="test-image-input" accept="image/*" hidden>
+                    <div class="upload-prompt">
+                        <span class="upload-icon">↑</span>
+                        <span>Click here or drag an image to predict</span>
+                    </div>
+                    <img id="test-image-preview" class="hidden" alt="Test Image">
+                </div>
+
+                <div id="prediction-result" class="result-card hidden">
+                    <h3>Prediction</h3>
+                    <div class="result-value" id="result-class">--</div>
+                    <div class="confidence-bar-container">
+                        <div class="confidence-bar" id="confidence-bar"></div>
+                    </div>
+                    <p class="confidence-text">Confidence: <span id="result-confidence">0%</span></p>
+                </div>
+            </div>
+        </section>
+        </main>
+    </div>
+</body>
+
+</html>
